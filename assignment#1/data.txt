@@ -2,3 +2,4 @@ Network Programming, NES411, 3, 84
 Introduction to UNIX, NES202, 3, 95.849
 Networking Protocols, NES415, 3, 92.55
 Wireless Networks, NES441, 3, 96.1
+Networks Lab, NES413, 1, 96.1
