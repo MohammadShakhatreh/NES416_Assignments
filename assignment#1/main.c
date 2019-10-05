@@ -13,8 +13,7 @@ struct Course {
 } courses[COURSES_LEN]; // Declare an array of courses
 
 /*
-* display the commands the program understands.
-* waits for a choice and return it.
+* Display the commands the program understands.
 */
 int help() {
     puts("1 - Diplay all courses information.");
@@ -29,8 +28,9 @@ int help() {
 }
 
 /*
-* loads courses from a file and puts them in the global array courses.
+* Loads courses from a file and puts them in the global array courses.
 * file format is name, code, credit, grade
+* each course is on separate line.
 */
 int load_courses(char *filename) {
     // Open file in read mode
@@ -96,6 +96,7 @@ void display_courses_info() {
 
 void compute_gpa() {
     float gpa = 0.0;
+
     for(int i = 0; i < COURSES_LEN; ++i){
         gpa += courses[i].grade;
     }
@@ -105,6 +106,7 @@ void compute_gpa() {
 
 void display_highest_grade() {
     struct Course max = courses[0];
+
     for(int i = 0; i < COURSES_LEN; ++i) {
         if (courses[i].grade > max.grade)
             max = courses[i];
@@ -123,11 +125,12 @@ void display_lowest_grade() {
     printf("%s\n", min.name);
 }
 
-void display_courses_with_credit() {
+void display_courses_by_credit() {
     printf("Enter courses credit: ");
 
     int credit, cnt = 0;
     scanf("%d", &credit);
+
     for(int i = 0; i < COURSES_LEN; ++i) {
         if(courses[i].credit == credit) {
             printf("%s ", courses[i].code); ++cnt;
@@ -140,12 +143,13 @@ void display_courses_with_credit() {
         puts("No courses with this credit.");
 }
 
-void display_course_with_code() {
+void display_course_by_code() {
     printf("Enter course code: ");
 
     char code[20];
     bool found = false;
     scanf("%s", code);
+
     for(int i = 0; i < COURSES_LEN; ++i) {
         if(strcmp(code, courses[i].code) == 0) {
             printf("%s %s %.2f %d\n", courses[i].name, courses[i].code, courses[i].grade, courses[i].credit);
@@ -164,6 +168,7 @@ void display_grade_for_course() {
     char code[20];
     bool found = false;
     scanf("%s", code);
+
     for(int i = 0; i < COURSES_LEN; ++i) {
         if(strcmp(code, courses[i].code) == 0) {
             printf("grade: %s\n", gtos(courses[i].grade));
@@ -186,7 +191,7 @@ int main(int argc, char *argv[]){
     // Trying to load the courses.
     char *filename = argv[1];
     if (load_courses(filename) != 0){
-        printf("failed to open the file\n");
+        printf("failed to open the file.\n");
         return -1;
     }
 
@@ -212,10 +217,10 @@ int main(int argc, char *argv[]){
                 display_lowest_grade();
                 break;
             case 5:
-                display_courses_with_credit();
+                display_courses_by_credit();
                 break;
             case 6:
-                display_course_with_code();
+                display_course_by_code();
                 break;
             case 7:
                 display_grade_for_course();
