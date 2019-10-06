@@ -1,3 +1,8 @@
+/*
+* Team names:
+* Mohammad Shakhatreh
+* Khaled Al-rejjal
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -15,7 +20,7 @@ struct Course {
 /*
 * Display the commands the program understands.
 */
-int help() {
+void help() {
     puts("1 - Diplay all courses information.");
     puts("2 - Compute GPA of all courses.");
     puts("3 - Display highest grade and the corresponding course name.");
