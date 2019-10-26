@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#include "generic_server.h"
+#include "../generic_server.h"
 
 #define	LISTENQ	1024
 #define	MAXLINE	8192
@@ -22,34 +22,33 @@ const char *help = "\
 3 - Count the frequency of some character\n\
 4 - Is the string statement or question\n\
 5 - help\n\
-6 - Exit\n";
+6 - Exit";
 
 void upper_case(int cfd, const char *str) {
 	if(strlen(str) == 0){
-		write(cfd, "1 No string is provided.", 25);
+		write(cfd, "1 No string is provided.", 26);
 		return;
 	}
 
-	printf("upper_case: %s", str);
+	char tmp[MAXLINE], res[MAXLINE];
+	strcpy(tmp, str);
 
-	char res[MAXLINE];
-	strcpy(res, str);
+	for(int i = 0; tmp[i] != '\0'; ++i)
+		if(isalpha(tmp[i]))
+			tmp[i] = toupper(tmp[i]);
 
-	for(int i = 0; res[i] != '\0'; ++i)
-		res[i] = toupper(res[i]);
+	// remove new line char from the string.
+	tmp[strlen(tmp) - 1] = '\0';
 
-	write(cfd, "0 ", 3);
+	sprintf(res, "0 %s", tmp);
 	write(cfd, res, strlen(res));
 }
 
 void count_words(int cfd, const char *str){
 	if(strlen(str) == 0){
-		write(cfd, "1 No string is provided.", 25);
+		write(cfd, "1 No string is provided.", 26);
 		return;
 	}
-
-	printf("count_words: %s", str);
-
 
 	int spaces = 0;
 	for(int i = 0; str[i] != '\0'; ++i) {
@@ -59,18 +58,16 @@ void count_words(int cfd, const char *str){
 
 	char res[30];
 	// Convert int to str
-	sprintf(res, "%d", spaces + 1);
 	// Number of words is spaces + 1
-	write(cfd, "0 ", 3);
+	sprintf(res, "0 %d", spaces + 1);
 	write(cfd, res, strlen(res));
 }
 
 void count_char_freq(int cfd, char arg, const char *str) {
 	if(strlen(str) == 0){
-		write(cfd, "1 No string is provided.", 25);
+		write(cfd, "1 No string is provided.", 26);
 		return;
 	}
-
 
 	int cnt = 0;
 	for (int i = 0; str[i] != '\0'; ++i){
@@ -79,18 +76,17 @@ void count_char_freq(int cfd, char arg, const char *str) {
 
 	char res[30];
 	// Convert int to str
-	sprintf(res, "%d", cnt);
+	sprintf(res, "0 %d", cnt);
 	if(cnt){
-		write(cfd, "0 ", 3);
 		write(cfd, res, strlen(res));
 	} else {
-		write(cfd, "1 There is no occurance of this character in the string.", 57);
+		write(cfd, "1 There is no occurance of this character in the string.", 58);
 	}
 }
 
 void question_or_statment(int cfd, const char *str) {
 	if(strlen(str) == 0){
-		write(cfd, "1 No string is provided.", 25);
+		write(cfd, "1 No string is provided.", 26);
 		return;
 	}
 
@@ -137,7 +133,7 @@ void execute(int cfd, const char *buf) {
 			close(cfd);
 			exit(EXIT_SUCCESS);
 		default:
-			write(cfd, "Invalid request type.", 22);
+			write(cfd, "Invalid request type.", 23);
 	}
 }
 
@@ -147,13 +143,10 @@ void request_handler(int cfd) {
 	ssize_t read_chars;
 
 	write(cfd, help, strlen(help));
-	write(cfd, "> ", 3);
 	while ((read_chars = read(cfd, buf, MAXLINE)) > 0) {
 		buf[read_chars] = '\0'; // Add NULL to the end of the string
 
 		execute(cfd, buf);
-		//printf("");
-		write(cfd, "\n> ", 3);
 	}
 
 	if (read_chars < 0) {
