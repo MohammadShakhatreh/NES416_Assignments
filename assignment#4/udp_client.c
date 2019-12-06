@@ -13,7 +13,7 @@
 
 #define MAXLINE 8192
 
-int main(int argc, char ** argv) {
+int main(int argc, char const *argv[]) {
 
 	if(argc != 3){
 		printf("usage: %s host port", argv[0]);
@@ -23,8 +23,8 @@ int main(int argc, char ** argv) {
 	int sfd;
 	struct sockaddr_in servaddr;
 	
-	if ((sfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		fprintf(stderr, "Could not create a TCP socket (%s)", strerror(errno));
+	if ((sfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+		fprintf(stderr, "Could not create a UDP socket (%s)", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -47,21 +47,23 @@ int main(int argc, char ** argv) {
 
 	servaddr.sin_port = htons(atoi(argv[2]));
 
+	// To receive async errors
 	if (connect(sfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0) {
 		fprintf(stderr, "Error from connect(): (%s)", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-
+	int sz;
 	char buff[MAXLINE];
 
-	// Send request
-	fgets(buff, MAXLINE, stdin);
-	write(sfd, buff, strlen(buff));
+	while(fgets(buff, MAXLINE, stdin) != NULL) {
 
-	// Get response
-	read(sfd, buff, MAXLINE);
-	fputs(buff, stdout);
+		sz = write(sfd, buff, strlen(buff));
+		sz = read(sfd, buff, MAXLINE);
+
+		buff[sz] = '\0';
+		fputs(buff, stdout);
+	}
 
 	return 0;
 }
