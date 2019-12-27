@@ -33,15 +33,17 @@ void sig_child(int signo) {
 	while((pid = waitpid(-1, &stat, WNOHANG)) > 0);
 }
 
+// Return the number of digits 
+// in a number
 int digit_cnt(int x) {
 
-  int cnt = 0;
-  while(x > 0) {
-    x /= 10;
-    ++cnt;
-  }
+	int cnt = 0;
+	while(x > 0) {
+		x /= 10;
+		++cnt;
+	}
 
-  return cnt;
+	return cnt;
 }
 
 void merge_command(int cfd, char *str) {
@@ -52,7 +54,7 @@ void merge_command(int cfd, char *str) {
 	sscanf(str, "%d", &a_len);
 
 	// Go to the first element in the array
-	str += 2;
+	str += digit_cnt(a_len) + 1;
 
 	// Get the elemnts of the first array
 	int *a = malloc(a_len * sizeof(int));
@@ -69,7 +71,7 @@ void merge_command(int cfd, char *str) {
 	sscanf(str, "%d", &b_len);
 
 	// Go to the first element of the array
-	str += 2;
+	str += digit_cnt(b_len) + 1;
 
 	// Get the elemnts of the second array
 	int *b = malloc(b_len * sizeof(int));
@@ -78,29 +80,41 @@ void merge_command(int cfd, char *str) {
 		str += digit_cnt(b[i]) + 1;
 	}
 
-	int idx = 0;
 	char response[MAXLINE];
 	char *res_ptr = response;
 
-	for(int i = 0; i < a_len; ++i, ++idx) {
-		sprintf(res_ptr, "%d ", a[i]);
+	for(int i = 0; i < a_len; ++i) {
+		// Handle white spaces between elements
+		// And to put a space at the end of the string
+		if(i != 0) {
+			*res_ptr = ' ';
+			res_ptr += 1;
+		}
+
+		sprintf(res_ptr, "%d", a[i]);
 	    res_ptr += digit_cnt(a[i]);
-	    *res_ptr = ' ';
-	    res_ptr += 1;
 	}
 
-	for(int i = 0; i < b_len; ++i, ++idx) {
-		sprintf(res_ptr, "%d ", b[i]);
+	// Space between the two arrays
+	*res_ptr = ' ';
+	res_ptr += 1;
+
+	for(int i = 0; i < b_len; ++i) {
+		if(i != 0) {
+			*res_ptr = ' ';
+			res_ptr += 1;
+		}
+
+		sprintf(res_ptr, "%d", b[i]);
 	    res_ptr += digit_cnt(b[i]);
-	    *res_ptr = ' ';
-	    res_ptr += 1;
 	}
+
 
 	// Write the response
 	write(cfd, response, strlen(response));
 }
 
-void reverse_command(int cfd, char * str) {
+void reverse_command(int cfd, char *str) {
 
 	int len;
 	
@@ -108,31 +122,38 @@ void reverse_command(int cfd, char * str) {
 	sscanf(str, "%d", &len);
 
 	// Go to the first element in the array
-	str += 2;
+	str += digit_cnt(len) + 1;
 
-	// Get the elemnts of the first array
+	// Get the elements of the array
 	int *x = malloc(len * sizeof(int));
 	for(int i = 0; i < len; ++i) {
 		sscanf(str, "%d", x + i);
 		str += digit_cnt(x[i]) + 1;
 	}
 
-  	int tmp;
-	for(int i = 0; i < (len / 2); ++i) {
+	// The reverse operation
+	for(int i = 0, tmp; i < (len / 2); ++i) {
 		tmp = x[i];
 	    x[i] = x[len - i - 1];
 	    x[len - i - 1] = tmp;
   	}
 
-  	int idx = 0;
+
 	char response[MAXLINE];
+
+	// Pointer to walk through the response string
 	char *res_ptr = response;
 
-	for(int i = 0; i < len; ++i, ++idx) {
-		sprintf(res_ptr, "%d ", x[i]);
+	for(int i = 0; i < len; ++i) {
+		// Handle white spaces between elements
+		// And to put a space at the end of the string
+		if(i != 0) {
+			*res_ptr = ' ';
+			res_ptr += 1;
+		}
+
+		sprintf(res_ptr, "%d", x[i]);
 	    res_ptr += digit_cnt(x[i]);
-	    *res_ptr = ' ';
-	    res_ptr += 1;
 	}
 
 	// Write the response
@@ -189,7 +210,7 @@ void *run(void *arg) {
 	if(ret != 0) perror("Error locking a mutex.\n");
 
 	--clients_cnt;
-	if(clients_cnt < MAX_CLIENTS) pthread_cond_signal(&cond);
+	pthread_cond_signal(&cond);
 
 	ret = pthread_mutex_unlock(&mutex);
 	if(ret != 0) perror("Error unlocking a mutex.\n");
@@ -264,6 +285,5 @@ int main(int argc, char *argv[]) {
 		if(ret != 0) perror("Error unlocking a mutex.\n");
 	}
 
-	// Close the main socket
-	close(sfd);
+	return EXIT_SUCCESS;
 }
