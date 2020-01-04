@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
 		cfd = malloc(sizeof(int));
 		*cfd = accept(sfd, NULL, NULL);
 
-		if(cfd < 0) {
+		if(*cfd < 0) {
 			fprintf(stderr, "Error from accept(): (%s)", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
